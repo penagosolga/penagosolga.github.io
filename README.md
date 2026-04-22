@@ -1,60 +1,73 @@
 # mylibrary.github.io template
 
-Static personal-library template for GitHub Pages.
+[![English version](https://img.shields.io/badge/README-English-blue)](./README-en.md)
 
-## What this includes
-- `index.html` as the main library dashboard.
-- `all-books.html` for the complete list.
-- `info/library.json` as source of truth.
-- Sample reviews in `reviews/`.
-- Scripts in `bin/` to import Goodreads data and mirror reviews.
-- `update/` for downloaded source files (RSS, HTML, bib exports, etc.).
+Template de biblioteca personal estatica para GitHub Pages.
 
-## Quick start
+## Ejemplo en accion
+
+Puedes ver una biblioteca real basada en este enfoque en:
+
+- https://jorgezuluaga.github.io/biblioteca.html
+
+## Que incluye este template
+
+- `index.html` como dashboard principal de la biblioteca.
+- `all-books.html` para el listado completo.
+- `info/library.json` como fuente de verdad.
+- Resenas locales de ejemplo en `reviews/`.
+- Scripts en `bin/` para importar datos de Goodreads y crear mirrors.
+- `update/` para archivos descargados (staging).
+
+## Inicio rapido
+
 ```bash
 make start
 ```
-Open `http://127.0.0.1:8000`.
 
-Stop server:
+Abre `http://127.0.0.1:8000`.
+
+Detener servidor:
+
 ```bash
 make stop
 ```
 
-## Update library from Goodreads
-### 1) Get your Goodreads RSS URL
+## Actualizar biblioteca desde Goodreads
 
-Use the Goodreads RSS endpoint for your review list. The format is:
+### 1) Obtener la URL RSS de Goodreads
+
+Formato esperado:
 
 ```text
 https://www.goodreads.com/review/list_rss/YOUR_USER_ID?key=YOUR_KEY&shelf=%23ALL%23
 ```
 
-How to get it:
-- Open Goodreads and go to your profile/books list.
-- Look for RSS in your review list page.
-- Copy the full URL including `user_id` and `key`.
+Como obtenerla:
+- Ve a tu perfil/lista de libros en Goodreads.
+- Busca el enlace RSS de tu lista de resenas.
+- Copia la URL completa (incluyendo `user_id` y `key`).
 
-### 2) (Optional but recommended) Get your Goodreads COOKIE for likes scraping
+### 2) Obtener el COOKIE (opcional, recomendado para likes)
 
-Without cookie, Goodreads can return login pages for some reviews and likes can be `0`.
+Sin cookie, Goodreads puede devolver paginas de login y los likes quedar en `0`.
 
-Steps:
-1. Sign in to Goodreads in your browser.
-2. Open one of your review pages (`https://www.goodreads.com/review/show/...`).
-3. Open DevTools (`F12`) and go to Network.
-4. Refresh page.
-5. Click the main document request for that review page.
-6. In Request Headers, copy the full `cookie` header value.
-7. Export it in your shell:
+Pasos:
+1. Inicia sesion en Goodreads.
+2. Abre una resena tuya (`https://www.goodreads.com/review/show/...`).
+3. Abre DevTools (`F12`) y entra a Network.
+4. Recarga la pagina.
+5. Abre la peticion principal (`document`) de esa pagina.
+6. En Request Headers, copia el valor completo de `cookie`.
+7. Exportalo en terminal:
 
 ```bash
 export GR_COOKIE='session-id=...; at-main=...; ccsid=...; locale=en; ...'
 ```
 
-Treat this as a password. Do not commit it.
+Tratalo como una contrasena y nunca lo subas al repo.
 
-### 3) Build `info/library.json`
+### 3) Construir `info/library.json`
 
 ```bash
 make library-build \
@@ -63,39 +76,39 @@ make library-build \
   COOKIE="$GR_COOKIE"
 ```
 
-Notes:
-- Increase `RSS_PAGES` if old books are missing.
-- If you do not want likes scraping, leave `COOKIE` empty.
+Notas:
+- Sube `RSS_PAGES` si faltan libros antiguos.
+- Si no quieres scrapeo de likes, deja `COOKIE` vacio.
 
-### 4) Generate aggregated stats
+### 4) Generar estadisticas agregadas
 
 ```bash
 make library-stats
 ```
 
-This updates `info/library-stats.json`.
+Esto actualiza `info/library-stats.json`.
 
-### 5) Mirror reviews to local HTML pages
+### 5) Crear mirror local de resenas
 
-Mirror one review first (smoke test):
+Primero una sola resena (prueba rapida):
 
 ```bash
 make reviews-first COOKIE="$GR_COOKIE" REVIEW_RSS_PAGES=40
 ```
 
-Mirror all reviews:
+Luego todas las resenas:
 
 ```bash
 make reviews-all COOKIE="$GR_COOKIE" REVIEW_RSS_PAGES=40
 ```
 
-Force regeneration of all mirrored reviews:
+Forzar regeneracion completa:
 
 ```bash
 make reviews-force COOKIE="$GR_COOKIE" REVIEW_RSS_PAGES=40
 ```
 
-### 6) Typical full refresh workflow
+### 6) Flujo completo recomendado
 
 ```bash
 make library-build RSS_URL="https://www.goodreads.com/review/list_rss/YOUR_USER_ID?key=YOUR_KEY&shelf=%23ALL%23" RSS_PAGES=40 COOKIE="$GR_COOKIE"
@@ -103,27 +116,33 @@ make library-stats
 make reviews-all COOKIE="$GR_COOKIE" REVIEW_RSS_PAGES=40
 ```
 
-Then run locally and verify:
+Despues verifica:
 - `index.html`
 - `all-books.html`
-- sample review pages in `reviews/`
+- `reviews/*.html`
 
-## Make targets
+## Comandos Make
 
-- `make start`: start local server in background.
-- `make stop`: stop local server on selected port.
-- `make dev`: run dev server (`bin/dev_server.py`).
-- `make library-build`: build `info/library.json` from Goodreads RSS.
-- `make library-stats`: build `info/library-stats.json`.
-- `make library-refresh`: run `library-build` + `library-stats`.
-- `make reviews-first`: mirror first review only.
-- `make reviews-all`: mirror all reviews.
-- `make reviews-force`: regenerate all mirrored reviews.
+- `make start`: inicia servidor local en background.
+- `make stop`: detiene servidor local por puerto.
+- `make dev`: inicia servidor dev (`bin/dev_server.py`).
+- `make library-build`: genera `info/library.json` desde RSS.
+- `make library-stats`: genera `info/library-stats.json`.
+- `make library-refresh`: corre `library-build` + `library-stats`.
+- `make reviews-first`: mirror de la primera resena.
+- `make reviews-all`: mirror de todas las resenas.
+- `make reviews-force`: regenera todos los mirrors.
 
-## `update/` directory
+## Directorio `update/`
 
-Use `update/` as a staging folder for downloaded source files (RSS exports, HTML snapshots, notes, etc.).  
-The website does not read `update/` directly; runtime data comes from `info/*.json`.
+`update/` es un directorio de staging para archivos descargados/manuales.  
+La web no lo consume directamente; los datos de runtime estan en `info/*.json`.
 
-## Publish
-Push this repo to GitHub and enable Pages with `main` + `/(root)`.
+## Autor
+
+**Jorge I. Zuluaga (2026-present)**  
+Hoja de vida: https://jorgezuluaga.github.io/
+
+## Creditos
+
+Esta pagina/template fue hecha con **Cursor**.
