@@ -164,64 +164,44 @@ Nota importante sobre `rsync`:
 
 ## Como recibir mejoras futuras del template
 
-Si alguien ya tiene su biblioteca personalizada, puede sincronizar mejoras del template sin perder sus datos.
-
-### Opcion recomendada: remoto `upstream` + merge/cherry-pick
-
-En el repo personalizado:
-
-1. Agrega este template como remoto `upstream`:
+Si alguien ya tiene su biblioteca personalizada, puede traer cambios nuevos del template con una sola regla:
 
 ```bash
-git remote add upstream https://github.com/JorgeZuluaga/mylibrary.github.io.git
-git fetch upstream
+make sync-template
 ```
 
-2. Crea una rama de actualizacion:
+### Que hace `make sync-template`
+
+1. Configura/actualiza el remoto `upstream` apuntando al repo del template.
+2. Hace `fetch` de cambios remotos.
+3. Crea o actualiza la rama `sync-template`.
+4. Fuerza el contenido de `sync-template` para que coincida exactamente con `upstream/main`.
+5. Limpia archivos no trackeados.
+6. Hace `push --force` de `sync-template` a `origin`.
+
+### Importante (sobrescritura forzada)
+
+Este flujo es deliberadamente agresivo para evitar conflictos y editores interactivos:
+- Sobrescribe cambios locales de la rama `sync-template`.
+- Puede eliminar archivos no trackeados en esa rama.
+- Siempre revisa antes de fusionar `sync-template` en `main`.
+
+### Flujo recomendado despues del sync
 
 ```bash
-git checkout -b sync-template-YYYYMMDD
-```
-
-3. Trae cambios del template:
-- Merge completo:
-  ```bash
-  git merge upstream/main
-  ```
-- O solo commits puntuales:
-  ```bash
-  git cherry-pick <commit_sha>
-  ```
-
-4. Resuelve conflictos (si aparecen), prueba local y luego integra:
-
-```bash
-make start
 git checkout main
-git merge sync-template-YYYYMMDD
+git merge sync-template
+make start
 git push
 ```
 
-### Que archivos conviene mantener propios (normalmente NO sobrescribir)
+### Consejo para personalizaciones propias
 
+Si tienes datos propios, mantenlos en `main` y revisa cuidadosamente antes de fusionar:
 - `info/library.json`
 - `info/library-stats.json`
 - `info/book_series.json`
-- `reviews/` (si ya tienen mirrors propios)
-- Cualquier personalizacion visual/textual de su sitio
-
-### Que archivos suelen sincronizarse bien
-
-- `assets/*.js` y `assets/style.css` (mejoras de UI/UX)
-- `bin/*.py` (mejoras de scraping/procesamiento)
-- `Makefile`
-- documentacion (`README.md`, etc.)
-
-### Estrategia segura para equipos
-
-- Mantener una rama `template-sync`.
-- Hacer PR desde `template-sync` hacia `main`.
-- Revisar conflicto por conflicto antes de fusionar.
+- `reviews/`
 
 ## Actualizar biblioteca desde Goodreads
 

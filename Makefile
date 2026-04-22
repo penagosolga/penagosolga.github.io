@@ -63,21 +63,12 @@ sync-template:
 	fi; \
 	echo "[2/6] Descargando cambios del template..."; \
 	git fetch upstream; \
-	echo "[3/6] Cambiando/creando rama $(SYNC_BRANCH)..."; \
-	CURRENT="$$(git branch --show-current)"; \
-	if [ "$$CURRENT" != "$(SYNC_BRANCH)" ]; then \
-		git checkout -b "$(SYNC_BRANCH)" 2>/dev/null || git checkout "$(SYNC_BRANCH)"; \
-	fi; \
-	echo "[4/6] Haciendo merge desde upstream/$(TEMPLATE_BRANCH)..."; \
-	if git merge "upstream/$(TEMPLATE_BRANCH)" --allow-unrelated-histories; then \
-		echo "Merge limpio."; \
-	else \
-		echo "Conflictos detectados. Tomando version remota (theirs)..."; \
-		git checkout --theirs .; \
-		git add -A; \
-		git commit -m "Resolve merge taking upstream template content"; \
-	fi; \
-	echo "[5/6] Subiendo rama al remoto origin..."; \
-	CURRENT="$$(git branch --show-current)"; \
-	git push -u origin "$$CURRENT"; \
-	echo "[6/6] Listo. Revisa cambios y, si aplica, mergea $(SYNC_BRANCH) a main."
+	echo "[3/6] Creando/actualizando rama $(SYNC_BRANCH)..."; \
+	git checkout -B "$(SYNC_BRANCH)"; \
+	echo "[4/6] Forzando contenido exacto de upstream/$(TEMPLATE_BRANCH)..."; \
+	git reset --hard "upstream/$(TEMPLATE_BRANCH)"; \
+	echo "[5/6] Limpiando archivos no trackeados..."; \
+	git clean -fd; \
+	echo "[6/6] Subiendo rama $(SYNC_BRANCH) a origin (forzado, sin editor)..."; \
+	git push -u origin "$(SYNC_BRANCH)" --force; \
+	echo "Listo. $(SYNC_BRANCH) ahora coincide exactamente con upstream/$(TEMPLATE_BRANCH)."

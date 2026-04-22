@@ -162,6 +162,47 @@ Important `rsync` note:
 5. Clone that repo locally and copy template files with `rsync`.
 6. Commit, push, and enable Pages in `Settings` -> `Pages`.
 
+## How to receive future template updates
+
+If someone already has a customized library site, they can pull new template updates with a single rule:
+
+```bash
+make sync-template
+```
+
+### What `make sync-template` does
+
+1. Configures/updates the `upstream` remote to the template repository.
+2. Fetches upstream changes.
+3. Creates or updates the `sync-template` branch.
+4. Forces `sync-template` to match `upstream/main` exactly.
+5. Cleans untracked files.
+6. Pushes `sync-template` to `origin` with `--force`.
+
+### Important (forced overwrite)
+
+This workflow is intentionally aggressive to avoid interactive conflicts/editors:
+- It overwrites local changes in `sync-template`.
+- It can remove untracked files in that branch.
+- Always review before merging `sync-template` into `main`.
+
+### Recommended flow after sync
+
+```bash
+git checkout main
+git merge sync-template
+make start
+git push
+```
+
+### Tip for custom content
+
+If you maintain your own data/content, keep it in `main` and review carefully before merge:
+- `info/library.json`
+- `info/library-stats.json`
+- `info/book_series.json`
+- `reviews/`
+
 ## Update your library from Goodreads
 
 ### 1) Get your Goodreads RSS URL
