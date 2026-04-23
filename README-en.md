@@ -33,6 +33,86 @@ Stop server:
 make stop
 ```
 
+## Software requirements
+
+To prepare/update this library, install:
+
+- `git` (clone, commit, push).
+- `python3` (run scripts from `bin/`).
+- `make` (shortcuts like `make start`, `make library-build`, `make reviews-all`).
+- Optional: a modern browser (for local verification).
+
+Recommended versions:
+
+- Python 3.10+ (preferably 3.11 or 3.12).
+- GNU Make 4.x (or compatible).
+- Git 2.30+.
+
+### Check what is already installed
+
+```bash
+git --version
+python3 --version
+make --version
+```
+
+### Install on Linux (Debian/Ubuntu)
+
+```bash
+sudo apt update
+sudo apt install -y git python3 python3-pip make
+```
+
+On Fedora:
+
+```bash
+sudo dnf install -y git python3 python3-pip make
+```
+
+### Install on macOS
+
+1. Install Homebrew: [https://brew.sh/](https://brew.sh/)
+2. Then run:
+
+```bash
+brew install git python make
+```
+
+Note: macOS often includes `python3`/`git`, but Homebrew is still recommended to keep them current.
+
+### Install on Windows
+
+Recommended option (simplest): use **WSL + Ubuntu** and follow the Linux steps.
+
+Native PowerShell option:
+
+- Install `Git for Windows`: [https://git-scm.com/download/win](https://git-scm.com/download/win)
+- Install Python: [https://www.python.org/downloads/windows/](https://www.python.org/downloads/windows/)
+- Install `make`:
+  - with Chocolatey: `choco install make`
+  - or with Scoop: `scoop install make`
+
+### How to use on each OS
+
+Using `make` (Linux/macOS/Windows with WSL or make installed):
+
+```bash
+make start
+make library-build RSS_URL="..." RSS_PAGES=40 COOKIE="$GR_COOKIE"
+make library-stats
+make reviews-all COOKIE="$GR_COOKIE" REVIEW_RSS_PAGES=40
+make stop
+```
+
+Without `make` (for example, Windows without make), run scripts directly:
+
+```bash
+python3 -m http.server 8000 --bind 127.0.0.1
+python3 bin/build_library_from_goodreads.py --rss-url "..." --out info/library.json --rss-pages 40 --scrape-likes --cookie "YOUR_COOKIE"
+python3 bin/update_library_stats.py info/library.json --out info/library-stats.json
+python3 bin/mirror_all_reviews.py --library-json info/library.json --reviews-dir reviews --cookie "YOUR_COOKIE" --rss-pages 40
+```
+
 ## Profile photo
 
 The library header shows an avatar. By default the template uses `assets/profile-placeholder.svg`.
