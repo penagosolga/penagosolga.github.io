@@ -1,16 +1,24 @@
 {
   "series": [
     {
-      "name": "Example Saga",
-      "author": "Alice Example",
+      "name": "Series by Rosa Montero",
+      "author": "Rosa Montero",
       "books": [
         {
-          "libraryBookId": "1001",
-          "title": "The Example Book"
+          "libraryBookId": "60293672",
+          "title": "El peligro de estar cuerda"
         },
         {
-          "libraryBookId": "1002",
-          "title": "Patterns in Practice"
+          "libraryBookId": "45586",
+          "title": "La loca de la casa"
+        },
+        {
+          "libraryBookId": "41564630",
+          "title": "Historia del Rey Transparente (edición especial con el CD con las músicas del libro)"
+        },
+        {
+          "libraryBookId": "17567272",
+          "title": "La ridícula idea de no volver a verte"
         }
       ]
     }
