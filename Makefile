@@ -17,7 +17,7 @@ SYNC_BRANCH ?= sync-template
 
 help:
 	@echo "make start|stop|dev|library-build|library-stats|reviews-all"
-	@echo "make sync-template            # force sync template into main, return to main, remove temp branch"
+	@echo "make sync-template            # sync template files only (keeps info/, reviews/, assets/profile.*)"
 
 start:
 	@echo "Starting server on http://$(HOST):$(PORT)"
@@ -53,7 +53,9 @@ reviews-force:
 
 sync-template:
 	@set -e; \
-	echo "[1/9] Configurando remoto upstream..."; \
+	TMP_DIR="$$(mktemp -d)"; \
+	trap 'rm -rf "$$TMP_DIR"' EXIT; \
+	echo "[1/8] Configurando remoto upstream..."; \
 	if git remote get-url upstream >/dev/null 2>&1; then \
 		git remote set-url upstream "$(TEMPLATE_UPSTREAM)"; \
 		echo "Updated upstream -> $(TEMPLATE_UPSTREAM)"; \
@@ -61,23 +63,30 @@ sync-template:
 		git remote add upstream "$(TEMPLATE_UPSTREAM)"; \
 		echo "Added upstream -> $(TEMPLATE_UPSTREAM)"; \
 	fi; \
-	echo "[2/9] Descargando cambios del template..."; \
+	echo "[2/8] Descargando cambios del template..."; \
 	git fetch upstream; \
-	echo "[3/9] Creando/actualizando rama temporal $(SYNC_BRANCH)..."; \
+	echo "[3/8] Creando/actualizando rama temporal $(SYNC_BRANCH)..."; \
 	git checkout -B "$(SYNC_BRANCH)"; \
-	echo "[4/9] Forzando contenido exacto de upstream/$(TEMPLATE_BRANCH)..."; \
-	git reset --hard "upstream/$(TEMPLATE_BRANCH)"; \
-	echo "[5/9] Limpiando archivos no trackeados en $(SYNC_BRANCH)..."; \
-	git clean -fd; \
-	echo "[6/9] Actualizando main con el contenido sincronizado..."; \
+	echo "[4/8] Exportando upstream/$(TEMPLATE_BRANCH) a directorio temporal..."; \
+	git archive "upstream/$(TEMPLATE_BRANCH)" | tar -x -C "$$TMP_DIR"; \
+	echo "[5/8] Sincronizando archivos de plantilla (preservando datos)..."; \
+	rsync -a --delete \
+		--exclude ".git/" \
+		--exclude "info/" \
+		--exclude "reviews/" \
+		--exclude "assets/profile.jpg" \
+		--exclude "assets/profile.jpeg" \
+		--exclude "assets/profile.png" \
+		--exclude "assets/profile.webp" \
+		--exclude "assets/profile.gif" \
+		"$$TMP_DIR"/ ./; \
+	echo "[6/8] Actualizando main con el contenido sincronizado..."; \
 	git checkout main; \
 	git reset --hard "$(SYNC_BRANCH)"; \
-	echo "[7/9] Limpiando archivos no trackeados en main..."; \
-	git clean -fd; \
-	echo "[8/9] Publicando main (forzado, sin editor)..."; \
+	echo "[7/8] Publicando main (forzado, sin editor)..."; \
 	git push -u origin main --force; \
-	echo "[9/9] Eliminando rama temporal $(SYNC_BRANCH)..."; \
+	echo "[8/8] Eliminando rama temporal $(SYNC_BRANCH)..."; \
 	git branch -D "$(SYNC_BRANCH)" 2>/dev/null || true; \
 	git push origin --delete "$(SYNC_BRANCH)" 2>/dev/null || true; \
-	echo "Listo. main ahora coincide exactamente con upstream/$(TEMPLATE_BRANCH)."; \
+	echo "Listo. main sincronizado con upstream/$(TEMPLATE_BRANCH), preservando info/, reviews/ y assets/profile.*."; \
 	echo "Rama activa: $$(git branch --show-current)"
