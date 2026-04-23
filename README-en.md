@@ -127,6 +127,20 @@ To use your own picture:
 
 If you skip this step, the placeholder remains.
 
+## Library intro text
+
+After updating the profile photo, also update the intro text in:
+
+- `info/intro.html`
+
+This file can include one or more HTML paragraphs (`<p>...</p>`) with the personal description for the library owner.
+
+Recommended flow:
+
+1. Update the photo (`assets/profile.jpg|png|webp`).
+2. Edit `info/intro.html` with your own description.
+3. Run `git add`, `commit`, and `push`.
+
 ## How to use this template in an empty repository
 
 If you already created an empty repository in another account, this is the recommended flow.

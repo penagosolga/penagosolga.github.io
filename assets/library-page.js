@@ -8,6 +8,7 @@ import { trackPageView } from "./visitor-tracker.js";
 
 const LIBRARY_JSON = "./info/library.json";
 const BOOK_SERIES_JSON = "./info/book_series.json";
+const INTRO_HTML = "./info/intro.html";
 const PROFILE_CANDIDATES = [
   "./assets/profile.jpg",
   "./assets/profile.png",
@@ -218,6 +219,17 @@ async function resolveProfileImage() {
   return PROFILE_FALLBACK;
 }
 
+async function loadLibraryIntro(lang) {
+  try {
+    const res = await fetch(INTRO_HTML, { cache: "no-store" });
+    if (!res.ok) return "";
+    const html = (await res.text()).trim();
+    return html;
+  } catch (_err) {
+    return "";
+  }
+}
+
 function applyLibraryChrome(lang) {
   document.documentElement.lang = lang === "en" ? "en" : "es";
   document.title =
@@ -344,8 +356,13 @@ async function main() {
   const reviewedPct = totalRead ? (totalReviewed / totalRead) * 100 : 0;
   const totalLikes = reviewed.reduce((acc, b) => acc + (b.reviewLikes || 0), 0);
 
+  const introHtml = await loadLibraryIntro(lang);
   titleEl.textContent = t("library_title", lang);
-  introEl.textContent = t("library_intro", lang);
+  if (introHtml) {
+    introEl.innerHTML = introHtml;
+  } else {
+    introEl.textContent = t("library_intro", lang);
+  }
   profileEl.href = (data.profileUrl || "https://www.goodreads.com/");
   profileEl.textContent = t("library_profile", lang);
   sourceEl.textContent = "";

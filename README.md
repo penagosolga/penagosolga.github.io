@@ -127,6 +127,20 @@ Para que aparezca tu propia imagen:
 
 Si no añades ninguna imagen propia, se seguirá viendo el placeholder.
 
+## Texto de presentación de la biblioteca
+
+Después de cambiar la foto de perfil, actualiza también el texto de presentación en:
+
+- `info/intro.html`
+
+Ese archivo puede contener uno o varios párrafos HTML (`<p>...</p>`) con la descripción personal de quien use la biblioteca.
+
+Flujo recomendado:
+
+1. Cambia la foto (`assets/profile.jpg|png|webp`).
+2. Edita `info/intro.html` con tu descripción.
+3. Haz `git add`, `commit` y `push`.
+
 ## Como usar este template en un repo vacio
 
 Si ya creaste un repositorio vacio en otra cuenta, este es el flujo recomendado.

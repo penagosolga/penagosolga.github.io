@@ -54,8 +54,10 @@ reviews-force:
 sync-template:
 	@set -e; \
 	TMP_DIR="$$(mktemp -d)"; \
+	KEEP_DIR="$$(mktemp -d)"; \
 	trap 'rm -rf "$$TMP_DIR"' EXIT; \
-	echo "[1/8] Configurando remoto upstream..."; \
+	trap 'rm -rf "$$TMP_DIR" "$$KEEP_DIR"' EXIT; \
+	echo "[1/9] Configurando remoto upstream..."; \
 	if git remote get-url upstream >/dev/null 2>&1; then \
 		git remote set-url upstream "$(TEMPLATE_UPSTREAM)"; \
 		echo "Updated upstream -> $(TEMPLATE_UPSTREAM)"; \
@@ -63,13 +65,20 @@ sync-template:
 		git remote add upstream "$(TEMPLATE_UPSTREAM)"; \
 		echo "Added upstream -> $(TEMPLATE_UPSTREAM)"; \
 	fi; \
-	echo "[2/8] Descargando cambios del template..."; \
+	echo "[2/9] Descargando cambios del template..."; \
 	git fetch upstream; \
-	echo "[3/8] Creando/actualizando rama temporal $(SYNC_BRANCH)..."; \
-	git checkout -B "$(SYNC_BRANCH)"; \
-	echo "[4/8] Exportando upstream/$(TEMPLATE_BRANCH) a directorio temporal..."; \
+	echo "[3/9] Cambiando a main..."; \
+	git checkout main; \
+	echo "[4/9] Respaldando datos locales (info/, reviews/, assets/profile.*)..."; \
+	mkdir -p "$$KEEP_DIR/info" "$$KEEP_DIR/reviews" "$$KEEP_DIR/assets"; \
+	if [ -d info ]; then rsync -a info/ "$$KEEP_DIR/info/"; fi; \
+	if [ -d reviews ]; then rsync -a reviews/ "$$KEEP_DIR/reviews/"; fi; \
+	for f in assets/profile.jpg assets/profile.jpeg assets/profile.png assets/profile.webp assets/profile.gif; do \
+		if [ -f "$$f" ]; then cp "$$f" "$$KEEP_DIR/assets/"; fi; \
+	done; \
+	echo "[5/9] Exportando upstream/$(TEMPLATE_BRANCH) a directorio temporal..."; \
 	git archive "upstream/$(TEMPLATE_BRANCH)" | tar -x -C "$$TMP_DIR"; \
-	echo "[5/8] Sincronizando archivos de plantilla (preservando datos)..."; \
+	echo "[6/9] Sincronizando archivos de plantilla (preservando datos)..."; \
 	rsync -a --delete \
 		--exclude ".git/" \
 		--exclude "info/" \
@@ -80,13 +89,21 @@ sync-template:
 		--exclude "assets/profile.webp" \
 		--exclude "assets/profile.gif" \
 		"$$TMP_DIR"/ ./; \
-	echo "[6/8] Actualizando main con el contenido sincronizado..."; \
-	git checkout main; \
-	git reset --hard "$(SYNC_BRANCH)"; \
-	echo "[7/8] Publicando main (forzado, sin editor)..."; \
+	echo "[7/9] Restaurando datos locales respaldados..."; \
+	mkdir -p info reviews assets; \
+	if [ -d "$$KEEP_DIR/info" ]; then rsync -a "$$KEEP_DIR/info/" info/; fi; \
+	if [ -d "$$KEEP_DIR/reviews" ]; then rsync -a "$$KEEP_DIR/reviews/" reviews/; fi; \
+	for f in "$$KEEP_DIR"/assets/profile.*; do \
+		if [ -f "$$f" ]; then cp "$$f" assets/; fi; \
+	done; \
+	echo "[8/9] Creando commit de sincronización (si hay cambios)..."; \
+	git add -A; \
+	if git diff --cached --quiet; then \
+		echo "Sin cambios para commitear."; \
+	else \
+		git commit -m "Sync template from upstream/$(TEMPLATE_BRANCH) (preserve data files)"; \
+	fi; \
+	echo "[9/9] Publicando main (forzado, sin editor)..."; \
 	git push -u origin main --force; \
-	echo "[8/8] Eliminando rama temporal $(SYNC_BRANCH)..."; \
-	git branch -D "$(SYNC_BRANCH)" 2>/dev/null || true; \
-	git push origin --delete "$(SYNC_BRANCH)" 2>/dev/null || true; \
 	echo "Listo. main sincronizado con upstream/$(TEMPLATE_BRANCH), preservando info/, reviews/ y assets/profile.*."; \
 	echo "Rama activa: $$(git branch --show-current)"
